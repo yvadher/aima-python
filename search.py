@@ -275,6 +275,7 @@ def best_first_graph_search(problem, f, display=False):
         if problem.goal_test(node.state):
             if display:
                 print(len(explored), "paths have been expanded and", len(frontier), "paths remain in the frontier")
+                print (explored)
             return node
         explored.add(node.state)
         for child in node.expand(problem):
