@@ -1,13 +1,23 @@
 """
-Assignment 1 file for running 8-Puzzel and finding the A* algortihym optimality
+Assignment 1 file for running 8-Puzzle, Duck Puzzle and finding the A* algortihym optimality
 
 """
+
+# Imports required for this file to run. 
 import random
 import time
+import csv
 from utils import memoize, PriorityQueue
 from search import EightPuzzle, Node, Problem
 
+
 class EightPuzzleGame(EightPuzzle):
+    '''
+    EightPuzzleGame class derived from EightPuzzle.
+    -> calculateMissplacedTiles() - for calculating the missplaced tiles heurstic ( parent class uses 0 as tiles so need overwrite)
+    -> calculateManhattenDist()   - for calculating the manhatten distance
+    -> maxH()                     - for max of both heurstic
+    Have not counted 0 as the tiles in this assignment and has followed the textbook. '''
 
     def __init__(self, initial):
         super().__init__(initial)
@@ -15,11 +25,14 @@ class EightPuzzleGame(EightPuzzle):
     def calculateMissplacedTiles(self, node):
         return sum(s != g for (s, g) in zip(node.state, self.goal) if s != 0)
 
-
     def calculateManhattenDist(self,node):
         h_value = 0
         for i, number in enumerate(node.state):
             if number:
+                # This formula is derived from patern finding. Modulo oprartor gives x val and floor devision gives y val
+                #   so manhatten distance = abs(x-x1) + abs(y-y1)
+                #   this is more neat approch than the hardcorded value approch. 
+            
                 h_value += abs((number-1)%3 - i%3) + abs((number-1)//3 - i//3)
         return h_value
 
@@ -27,34 +40,30 @@ class EightPuzzleGame(EightPuzzle):
         return max(self.calculateManhattenDist(node), self.calculateMissplacedTiles(node))
 
 
-    def display(self):
-         #clousure function
-        def printer(str):
-            print (str, end ='')
-
-        for index, number in enumerate(self.initial):
-            printer(number) if (number != 0 ) else printer("*")
-            printer("\n") if ( (index + 1) % 3 == 0 and index != 0 ) else printer(" ")
-
 class DuckPuzzle(Problem):
+    '''
+    DuckPuzzle class derived from Problem.
+    -> calculateMissplacedTiles() - for calculating the missplaced tiles heurstic ( parent class uses 0 as tiles so need overwrite)
+    -> calculateManhattenDist()   - for calculating the manhatten distance
+    -> maxH()                     - for max of both heurstic
+    -> actions(), check_solvability(), results() have been changed to fulfill the requirments. 
+    Have not counted 0 as the tiles in this assignment and has followed the textbook. '''
+
     def __init__(self, initial, goal=(1, 2, 3, 4, 5, 6, 7, 8, 0)):
         """ Define goal state and initialize a problem """
         super().__init__(initial, goal)
 
     def find_blank_square(self, state):
         """Return the index of the blank square in a given state"""
-
         return state.index(0)
 
     def actions(self, state):
         possible_actions = ['UP', 'DOWN', 'LEFT', 'RIGHT']
         index_blank_square = self.find_blank_square(state)
-
         leftMoveAllowed =  (1,5,8,3,4,7)
         rightMoveAllowed = (0,2,6,3,4,7)
         downMoveAllowed =  (0,1,3,4,5)
         upMoveAllowed =    (2,3,6,7,8)
-
         if index_blank_square not in leftMoveAllowed:
             possible_actions.remove('LEFT')
         if index_blank_square not in rightMoveAllowed:
@@ -92,6 +101,15 @@ class DuckPuzzle(Problem):
         """ Checks if the given state is solvable """
 
         # for it to be solvable first 3 index should have 1,2,3 only 
+        # Reason is because 1,2,3 can not be moved to the second block which is show below. 
+        #  |1|2|            First Block:  |1|2|     Second Block:  
+        #  |3|0|4|5|                      |2|0|                    |0|4|5|
+        #    |6|7|8|                                               |6|7|8|         
+        # Zero is empty space and it is not possible to move 1,2,3 to the 2nd and 3rd row(second block.)
+        # Given the width of the first block to be 2. It would be only solvable if the inversion is odd if zero is in first row. 
+        # For second block, it would be solvable if inversions are even. Credits given to below source. 
+        # https://www.cs.bham.ac.uk/~mdr/teaching/modules04/java2/TilesSolvability.html
+
         validSet = (1,2,3)
         if (state[0] not in validSet or state[1] not in validSet or state[2] not in validSet):
             return None
@@ -140,12 +158,13 @@ class DuckPuzzle(Problem):
         print (state[2], state[3],state[4], state[5])
         print (" ", state[6], state[7], state[8])
 
+
 ## below function code is from the search.py with some modification.
-def astar_search(problem, h, display=False):
+def astar_search(problem, h, display, row):
+    """ Modifications are made for counting the poped nodes from frontier and for statstics generation. """
 
     h = memoize(h or problem.h, 'h')
     f = memoize(lambda n: n.path_cost + h(n), 'f')
-    
     node = Node(problem.initial)
     frontier = PriorityQueue('min', f)
     frontier.append(node)
@@ -157,10 +176,10 @@ def astar_search(problem, h, display=False):
         frontierPopCount += 1
         if problem.goal_test(node.state):
             if display:
-                print("Sln Length :", str(node.depth), " | removed nodes from frontier:  ", str(frontierPopCount))
-                elapsed_time = time.time() - start_time
-                print(f'elapsed time (in seconds): {elapsed_time}s')
-            return node
+                print("Solution:", node.depth, "Nodes poped from fontier:", frontierPopCount)
+            elapsed_time = time.time() - start_time
+            row.extend([elapsed_time, node.depth, frontierPopCount])
+            return node, row
         explored.add(node.state)
         for child in node.expand(problem):
             if child.state not in explored and child not in frontier:
@@ -169,12 +188,10 @@ def astar_search(problem, h, display=False):
                 if f(child) < frontier[child]:
                     del frontier[child]
                     frontier.append(child)
-
-    print ( str(frontierPopCount) )
     return None
 
-def display(state):
 
+def display(state):
     #clousure function
     def printer(str):
         print (str, end ='')
@@ -182,55 +199,46 @@ def display(state):
     for index, number in enumerate(state):
         printer(number) if (number != 0 ) else printer("*")
         printer("\n") if ( (index + 1) % 3 == 0 and index != 0 ) else printer(" ")
+    
+    # I have assumed that at the end there is carrige return based on the look given on the assignment page. 
+
 
 def make_rand_8puzzle():
     while True:
         initialPuzzel = tuple(random.sample( range(0,9), 9))
         puzzel = EightPuzzleGame(initialPuzzel)
         if (puzzel.check_solvability(puzzel.initial)):
-            print (initialPuzzel)
             return puzzel
 
-    # return EightPuzzleGame((1,0,3,4,2,6,7,5,8))
-    # return EightPuzzleGame( (4,1,0,7,5,3,6,8,2) )
-    return EightPuzzleGame((8,2,3,4,5,6,7,1,0))
 
 def make_rand_duckpuzzle():
     while True:
         initialPuzzel = tuple(random.sample( range(0,9), 9))
         puzzel = DuckPuzzle(initialPuzzel)
         if (puzzel.check_solvability(puzzel.initial)):
-            print (initialPuzzel)
             return puzzel
 
-def paly_the_game():
-    randPuzzles = []
-    for i in range(0,10):
-        tempPuzzel = make_rand_8puzzle()
-        randPuzzles.append(tempPuzzel)
+
+def paly_the_game(gameName, samples):
+    '''
+    This is function to run all the samples to solve puzzle using the A* search with different heurstics. 
+    '''
+    for i in range(0, samples):
+        tempPuzzel = gameName()
+        print ("Sample #:",tempPuzzel.initial)
+        row = [ i+1 ,tempPuzzel.initial]
+        node, row = astar_search(tempPuzzel, tempPuzzel.calculateManhattenDist, False, row)
+        node, row = astar_search(tempPuzzel, tempPuzzel.calculateMissplacedTiles, False, row)
+        node, row = astar_search(tempPuzzel, tempPuzzel.maxH, False, row)
+
+        with open('a1.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(row)
 
 
-dPuz = make_rand_duckpuzzle()
-
-dPuz.display(dPuz.initial)
-print ("------- Puzzel ---------")
-print (dPuz.check_solvability( dPuz.initial) )
-node = astar_search(dPuz, h=dPuz.calculateManhattenDist, display=True)
-print ( len(node.solution()))
-
-# puz = make_rand_8puzzle()
-# print ("------- Puzzel ---------")
-# puz.display()
-
-# print ("------- Misplaced tiles ----------")
-# astar_search(puz, h=puz.calculateMissplacedTiles, display=True)
-
-# print ("\n------- Manhatten Distance ----------")
-# astar_search(puz, h=puz.calculateManhattenDist, display=True)
-
-# print ("\n------- Max of both  ----------")
-# astar_search(puz, h=puz.maxH, display=True)
-
-# print (puz.calculateManhattenDist( puz.initial))
-
-# print (puz.maxH( puz.initial))
+"""
+To generate the statistics for the algorithm performance. Uncomment the bellow function. 
+It will create file called a1.csv where you would able to see the data.
+Also make sure for 8puzzle it takes time to run so limit your sample number. 
+"""
+# paly_the_game(make_rand_duckpuzzle, 1)
