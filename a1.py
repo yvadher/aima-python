@@ -91,17 +91,32 @@ class DuckPuzzle(Problem):
     def check_solvability(self, state):
         """ Checks if the given state is solvable """
 
-        inversion = 0
-        for i in range(len(state)):
+        # for it to be solvable first 3 index should have 1,2,3 only 
+        validSet = (1,2,3)
+        if (state[0] not in validSet or state[1] not in validSet or state[2] not in validSet):
+            return None
+
+        # find inversion for the first for indexes 
+        inversionFirst = 0
+        for i in range(0,3):
+            for j in range(i+1, 4):
+                if (state[i] > state[j]) and state[i] != 0 and state[j] != 0:
+                    inversionFirst += 1
+        # find the inversion for the second block and must be even in order to be solvble
+        inversionSecond = 0
+        for i in range(3, len(state)):
             for j in range(i + 1, len(state)):
                 if (state[i] > state[j]) and state[i] != 0 and state[j] != 0:
-                    inversion += 1
-        # blank is the index of the blank square
+                    inversionSecond += 1   
+        
+        # # blank is the index of the blank square
         blank = self.find_blank_square(state)
-        if ( blank < 2):
-            return inversion % 2 == 0
+
+        # solvable if only zero is on the first row and it has to be odd inversion for the frist block. 
+        if ( blank < 2 and inversionFirst % 2 != 0):
+            return inversionSecond % 2 == 0
         else:
-            return inversion % 2 == 0  
+            return (inversionFirst % 2 == 0 and inversionSecond % 2 == 0)
 
     def calculateMissplacedTiles(self, node):
         return sum(s != g for (s, g) in zip(node.state, self.goal) if s != 0)
@@ -124,7 +139,6 @@ class DuckPuzzle(Problem):
         print (state[0], state[1])
         print (state[2], state[3],state[4], state[5])
         print (" ", state[6], state[7], state[8])
-
 
 ## below function code is from the search.py with some modification.
 def astar_search(problem, h, display=False):
@@ -159,7 +173,6 @@ def astar_search(problem, h, display=False):
     print ( str(frontierPopCount) )
     return None
 
-
 def display(state):
 
     #clousure function
@@ -189,20 +202,21 @@ def make_rand_duckpuzzle():
         if (puzzel.check_solvability(puzzel.initial)):
             print (initialPuzzel)
             return puzzel
-    # return DuckPuzzle( (3,1,2,7,0,4,6,5,8))
-
-dPuz = make_rand_duckpuzzle()
-
-dPuz.display(dPuz.initial)
-print ("------- Puzzel ---------")
-node = astar_search(dPuz, h=dPuz.calculateManhattenDist, display=True)
-print (node.solution())
 
 def paly_the_game():
     randPuzzles = []
     for i in range(0,10):
         tempPuzzel = make_rand_8puzzle()
         randPuzzles.append(tempPuzzel)
+
+
+dPuz = make_rand_duckpuzzle()
+
+dPuz.display(dPuz.initial)
+print ("------- Puzzel ---------")
+print (dPuz.check_solvability( dPuz.initial) )
+node = astar_search(dPuz, h=dPuz.calculateManhattenDist, display=True)
+print ( len(node.solution()))
 
 # puz = make_rand_8puzzle()
 # print ("------- Puzzel ---------")
