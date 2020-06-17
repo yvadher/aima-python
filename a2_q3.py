@@ -122,4 +122,5 @@ def run_q3():
                     haltTracker = True
         index += 1
 
-run_q3()
+# run the bellow command for creating statstics. 
+# run_q3()
