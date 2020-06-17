@@ -21,8 +21,6 @@ class CSPModified(CSP):
     def getUnassign(self):
         return self.nUnAssigned
 
-
-
 #############################################################################################################
 #                               HELPER FUNCTIONS
 #############################################################################################################
@@ -77,7 +75,7 @@ def createColor(domain,number):
     return domains
 
 #############################################################################################################
-#                               Q4
+#                               Q3 
 #############################################################################################################
 
 def run_q3():
@@ -104,7 +102,7 @@ def run_q3():
             if not haltTracker :
                 problem = MapColoringCSP(createColor(state + 1, lenOfProblem), tmpGraph)
                 AC3(problem)
-                solution =  min_conflicts(problem)
+                solution = (backtracking_search(problem,inference=forward_checking))
 
                 if solution != None:
                     endTime = time.time() 

@@ -1,0 +1,6 @@
+Problem Index,Probabilty,# Teams devided into,Running Time,Count of Assigned variables, Count of Unassigned Variables,Max people in team
+1,0.1,3,0.022630929946899414,1883,1227,11
+2,0.2,3,0.00656890869140625,269,158,12
+3,0.3,5,0.5543351173400879,1898,1228,8
+4,0.4,6,12.913559913635254,123,46,6
+5,0.5,7,36.24890089035034,1573455,898225,6
