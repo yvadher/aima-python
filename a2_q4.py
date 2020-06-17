@@ -89,7 +89,7 @@ def run_q4():
         writer = csv.writer(file)
         writer.writerow(['Problem Index',"Probabilty","# Teams devided into", "Running Time", "Count of Assigned variables"," Count of Unassigned Variables", "Max people in team" ])
     
-    graphs = [rand_graph(0.1, 31), rand_graph(0.2, 31), rand_graph(0.3, 31),rand_graph(0.4, 31), rand_graph(0.5, 31), rand_graph(0.6, 31)]
+    graphs = [rand_graph(0.1, 105), rand_graph(0.2, 105), rand_graph(0.3, 105),rand_graph(0.4, 105), rand_graph(0.5, 105), rand_graph(0.6, 105)]
     
     index = 1
     for tmpGraph in graphs:
