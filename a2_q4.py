@@ -75,17 +75,17 @@ def createColor(domain,number):
     return domains
 
 #############################################################################################################
-#                               Q3 
+#                               Q4
 #############################################################################################################
 
-def run_q3():
+def run_q4():
 
     # Setup the csv files with header to gather data. 
-    with open('resultProblem.csv', 'a') as file:
+    with open('resultProblemQ4.csv', 'a') as file:
         writer = csv.writer(file)
         writer.writerow(["Problem", "Solution"])
 
-    with open('resultData.csv', 'a') as file:
+    with open('resultDataQ4.csv', 'a') as file:
         writer = csv.writer(file)
         writer.writerow(['Problem Index',"Probabilty","# Teams devided into", "Running Time", "Count of Assigned variables"," Count of Unassigned Variables", "Max people in team" ])
     
@@ -102,7 +102,7 @@ def run_q3():
             if not haltTracker :
                 problem = MapColoringCSP(createColor(state + 1, lenOfProblem), tmpGraph)
                 AC3(problem)
-                solution = (backtracking_search(problem,inference=forward_checking))
+                solution = min_conflicts(problem)
 
                 if solution != None:
                     endTime = time.time() 
@@ -110,14 +110,14 @@ def run_q3():
                     rowData = [ index, index/10 ,teamsCount(solution), endTime-startTime, problem.nassigns, problem.getUnassign(), maxTeamCount(solution)]
 
                     # Write data to csv
-                    with open('resultProblem.csv', 'a') as file:
+                    with open('resultProblemQ4.csv', 'a') as file:
                         writer = csv.writer(file)
                         writer.writerow(rowProblem)
-                    with open('resultData.csv', 'a') as file:
+                    with open('resultDataQ4.csv', 'a') as file:
                         writer = csv.writer(file)
                         writer.writerow(rowData)
                 
                     haltTracker = True
         index += 1
 
-run_q3()
+run_q4()
